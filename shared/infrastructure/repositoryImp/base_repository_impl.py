@@ -13,6 +13,7 @@ from typing import Generic, List, Optional, Type, TypeVar
 
 from django.db import models
 
+from core.exceptions import EntityNotFoundError
 from shared.domain.base_entity import BaseEntity
 from shared.domain.base_repository import BaseRepository
 
@@ -52,7 +53,7 @@ class BaseDjangoRepository(BaseRepository[EntityT], Generic[EntityT, ModelT]):
         try:
             return self._to_entity(self.model_class.objects.get(id=entity_id))
         except self.model_class.DoesNotExist:
-            return None
+            return None 
 
     def delete(self, entity_id: str) -> None:
         count, _ = self.model_class.objects.filter(id=entity_id).delete()
