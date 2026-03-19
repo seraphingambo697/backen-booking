@@ -1,5 +1,5 @@
 """
-Tests unitaires des Value Objects — pur Python, zéro Django.
+Tests unitaires des Value Objects .
 pytest app/shared/tests/test_value_objects.py -v
 """
 from __future__ import annotations
@@ -19,9 +19,10 @@ from app.shared.domain.value_objects import DateRange, GuestCount, Money
 class TestDateRange:
 
     def _future(self, days=1) -> date:
+        """Retourne une date dans le futur."""
         return date.today() + timedelta(days=days)
-
     def test_valid_range(self):
+        """Test une plage de dates valide."""
         dr = DateRange(self._future(1), self._future(4))
         assert dr.nights == 3
 

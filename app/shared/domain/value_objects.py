@@ -62,7 +62,7 @@ class DateRange:
 
     def overlaps(self, other: "DateRange") -> bool:
         """
-        Retourne True si les deux plages se chevauchent.
+        Éviter les doubles réservations en vérifiant si les plages se chevauchent.
         Deux réservations se chevauchent si :
             mon check_in < leur check_out  ET  mon check_out > leur check_in
         """
@@ -73,7 +73,8 @@ class DateRange:
         return self.check_in <= d < self.check_out
 
     def hours_until_checkin(self) -> float:
-        """Nombre d'heures entre maintenant et le check_in."""
+        """Nombre d'heures entre maintenant et le check_in. permet d'annuler la réservation."""
+
         from datetime import datetime
         delta = datetime.combine(self.check_in, datetime.min.time()) - datetime.utcnow()
         return delta.total_seconds() / 3600
@@ -127,10 +128,12 @@ class Money:
     # ── Opérations ──────
 
     def add(self, other: "Money") -> "Money":
+        """Retourne la somme de deux montants."""
         self._assert_same_currency(other)
         return Money(round(self.amount + other.amount, 2), self.currency)
 
     def subtract(self, other: "Money") -> "Money":
+        """Retourne la différence entre deux montants."""
         self._assert_same_currency(other)
         result = round(self.amount - other.amount, 2)
         if result < 0:

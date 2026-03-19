@@ -18,7 +18,6 @@ class BaseRepository(ABC, Generic[T]):
 
     Principes :
       - Méthodes en termes métier (save, find_by_id…), pas SQL
-      - Aucun import Django ici — le domaine reste pur
       - Les implémentations concrètes sont dans infrastructure/
     """
 

@@ -60,7 +60,7 @@ class AuthenticationError(DomainException):
 
 
 class AuthorizationError(DomainException):
-    """Action non autorisée → HTTP 403."""
+    """Action non autorisée"""
 
     def __init__(self, message: str = "Action non autorisée."):
         super().__init__(message, "authorization_error")
