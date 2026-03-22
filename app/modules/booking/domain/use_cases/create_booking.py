@@ -34,7 +34,7 @@ class CreateBookingInput:
     check_out:        date
     guest_count:      int
     special_requests: str = ""
-    adults:           int = 0   # Si 0 → guest_count = tous des adultes
+    adults:           int = 0  
     children:         int = 0
 
 
@@ -46,18 +46,18 @@ class CreateBookingUseCase(BaseUseCase[CreateBookingInput, Booking]):
 
     @transactional
     def execute(self, i: CreateBookingInput) -> Booking:
-        # ── 1. Valider les dates via DateRange ────────────────────────────────
+        # check date 
         date_range = DateRange(check_in=i.check_in, check_out=i.check_out)
 
         max_nights = getattr(settings, "BOOKING_MAX_NIGHTS", 30)
         date_range.validate_max_nights(max_nights)
 
-        # ── 2. Valider les voyageurs ──────────────────────────────────────────
+        # Valider les voyageurs 
         adults   = i.adults   if i.adults   > 0 else i.guest_count
         children = i.children if i.children > 0 else 0
         guests   = GuestCount(adults=adults, children=children)
 
-        # ── 3. Vérifier la chambre ────────────────────────────────────────────
+        # Vérifier la chambre
         room = self.room_repo.find_by_id(i.room_id)
         if not room:
             raise EntityNotFoundError("Room", i.room_id)
@@ -69,7 +69,7 @@ class CreateBookingUseCase(BaseUseCase[CreateBookingInput, Booking]):
                 f"({guests.total} demandés)."
             )
 
-        # ── 4. Détecter les conflits de dates ─────────────────────────────────
+        # ── 4. Détecter les conflits de dates 
         conflicts = self.booking_repo.find_by_room_and_dates(
             i.room_id, i.check_in, i.check_out
         )
@@ -81,14 +81,14 @@ class CreateBookingUseCase(BaseUseCase[CreateBookingInput, Booking]):
                 conflict_ids = [b.id for b in conflicts],
             )
 
-        # ── 5. Calculer le prix ───────────────────────────────────────────────
+        # Calculer le prix 
         total = Money.from_price_per_night(
             price_per_night = room.price_per_night,
             nights          = date_range.nights,
             currency        = room.currency,
         )
 
-        # ── 6. Créer et persister ─────────────────────────────────────────────
+        # Créer et persister
         booking = Booking(
             user_id          = i.user_id,
             hotel_id         = i.hotel_id,

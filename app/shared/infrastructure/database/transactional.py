@@ -35,7 +35,6 @@ def transactional(method: F) -> F:
 
     - Si la méthode se termine normalement → commit.
     - Si une exception est levée (DomainException ou autre) → rollback complet.
-    - Compatible avec les savepoints imbriqués.
     """
 
     @functools.wraps(method)

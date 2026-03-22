@@ -23,11 +23,6 @@ class DateRange:
     """
     Plage de dates check_in / check_out pour une réservation.
     Immutable — toute modification crée un nouvel objet.
-
-    Invariants :
-      - check_in < check_out
-      - check_in >= aujourd'hui
-      - durée <= max_nights (configurable)
     """
     check_in:  date
     check_out: date
@@ -63,13 +58,11 @@ class DateRange:
     def overlaps(self, other: "DateRange") -> bool:
         """
         Éviter les doubles réservations en vérifiant si les plages se chevauchent.
-        Deux réservations se chevauchent si :
-            mon check_in < leur check_out  ET  mon check_out > leur check_in
         """
         return self.check_in < other.check_out and self.check_out > other.check_in
 
     def contains(self, d: date) -> bool:
-        """Retourne True si la date est dans la plage [check_in, check_out[."""
+        """Retourne True si la date est dans la plage """
         return self.check_in <= d < self.check_out
 
     def hours_until_checkin(self) -> float:
@@ -80,7 +73,7 @@ class DateRange:
         return delta.total_seconds() / 3600
 
     def is_free_cancellation(self, min_hours: int = 48) -> bool:
-        """Annulation gratuite si check_in dans plus de min_hours heures."""
+        """Annulation gratuite dans 48h."""
         return self.hours_until_checkin() > min_hours
 
     def validate_max_nights(self, max_nights: int):
@@ -90,7 +83,6 @@ class DateRange:
                 f"La durée maximale d'un séjour est de {max_nights} nuits.",
             )
 
-    # ── Constructeurs alternatifs ──────────────────────────────────────────────
 
     @classmethod
     def from_strings(cls, check_in: str, check_out: str) -> "DateRange":
@@ -112,9 +104,6 @@ class DateRange:
 class Money:
     """
     Montant monétaire avec devise.
-    Immutable — les opérations retournent un nouvel objet Money.
-
-    Évite les erreurs de flottants : utilise le centième comme unité interne.
     """
     amount:   float
     currency: str = "EUR"
@@ -125,7 +114,7 @@ class Money:
         if not self.currency or len(self.currency) != 3:
             raise DomainValidationError("currency", "La devise doit être un code ISO 4217 (3 lettres).")
 
-    # ── Opérations ──────
+    # ── Opérations 
 
     def add(self, other: "Money") -> "Money":
         """Retourne la somme de deux montants."""
@@ -141,6 +130,7 @@ class Money:
         return Money(result, self.currency)
 
     def multiply(self, factor: float) -> "Money":
+
         if factor < 0:
             raise DomainValidationError("factor", "Le facteur multiplicateur ne peut être négatif.")
         return Money(round(self.amount * factor, 2), self.currency)
@@ -152,6 +142,7 @@ class Money:
         return Money(round(self.amount * (1 + rate), 2), self.currency)
 
     def _assert_same_currency(self, other: "Money"):
+        """Vérifie si deux montants ont la même devise."""
         if self.currency != other.currency:
             raise DomainValidationError(
                 "currency",
@@ -188,7 +179,6 @@ class Money:
 class GuestCount:
     """
     Nombre de voyageurs avec décomposition adultes/enfants.
-    Immutable.
     """
     adults:   int
     children: int = 0

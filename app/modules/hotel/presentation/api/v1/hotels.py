@@ -42,9 +42,7 @@ def _room_response(room):
     return RoomResponseSerializer(room).data
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # HOTELS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class HotelListCreateView(APIView):
     """GET  → liste publique des hôtels (filtrable par ville)

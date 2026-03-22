@@ -19,6 +19,7 @@ ALLOWED_HOSTS: list[str] = []
 
 # ── Applications 
 DJANGO_APPS = [
+    'jazzmin',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

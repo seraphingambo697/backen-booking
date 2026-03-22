@@ -26,8 +26,8 @@ class CancelBookingInput:
 @dataclass
 class CancelBookingResult:
     booking:           Booking
-    is_free:           bool    # Annulation gratuite ?
-    refund_amount:     float   # Montant à rembourser (0 si non gratuite)
+    is_free:           bool    # Annulation 
+    refund_amount:     float   # Montant à rembourser 
     refund_currency:   str
 
 

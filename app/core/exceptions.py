@@ -1,6 +1,5 @@
 """
 app/core/exceptions.py
-Hiérarchie des exceptions métier LuxStay — domaine pur, zéro Django.
 Le mapping DomainException → HTTP status est dans shared/presentation/middleware.py.
 """
 from __future__ import annotations

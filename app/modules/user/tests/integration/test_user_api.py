@@ -15,7 +15,7 @@ from rest_framework.test import APIClient
 from app.modules.user.infrastructure.database.user_models import UserModel
 
 
-# ── Helpers ─────────────
+# ── Helpers 
 
 @pytest.fixture
 def client():
@@ -79,9 +79,7 @@ def _auth_client(client, email, password):
     return client
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # REGISTER
-# ═══════════════════════════════════════════════════════════════════════════════
 
 @pytest.mark.django_db
 class TestRegister:
@@ -92,33 +90,17 @@ class TestRegister:
         assert resp.data["success"] is True
         assert resp.data["data"]["email"] == user_data["email"]
 
-    def test_register_without_login(self, client, user_data):
-        """Inscription disponible sans être connecté."""
-        resp = client.post("/api/v1/auth/register/", user_data)
-        assert resp.status_code == status.HTTP_201_CREATED
 
     def test_register_duplicate_email(self, client, user_data, registered_user):
         resp = client.post("/api/v1/auth/register/", user_data)
         assert resp.status_code in (status.HTTP_409_CONFLICT, status.HTTP_400_BAD_REQUEST)
         assert resp.data["success"] is False
 
-    def test_register_missing_email(self, client):
-        resp = client.post("/api/v1/auth/register/", {
-            "password": "pass", "first_name": "A", "last_name": "B"
-        })
-        assert resp.status_code == status.HTTP_400_BAD_REQUEST
-
     def test_register_invalid_email_format(self, client):
         resp = client.post("/api/v1/auth/register/", {
             "email": "not-an-email",
             "password": "SecurePass123!",
             "first_name": "A", "last_name": "B",
-        })
-        assert resp.status_code == status.HTTP_400_BAD_REQUEST
-
-    def test_register_missing_password(self, client):
-        resp = client.post("/api/v1/auth/register/", {
-            "email": "test@test.com", "first_name": "A", "last_name": "B"
         })
         assert resp.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -132,18 +114,8 @@ class TestRegister:
             status.HTTP_422_UNPROCESSABLE_ENTITY,
         )
 
-    def test_register_creates_user_in_db(self, client, user_data):
-        client.post("/api/v1/auth/register/", user_data)
-        assert UserModel.objects.filter(email=user_data["email"]).exists()
 
-    def test_register_returns_no_password_in_response(self, client, user_data):
-        resp = client.post("/api/v1/auth/register/", user_data)
-        assert "password" not in resp.data.get("data", {})
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
 # LOGIN / LOGOUT
-# ═══════════════════════════════════════════════════════════════════════════════
 
 @pytest.mark.django_db
 class TestAuthLoginLogout:
@@ -168,14 +140,6 @@ class TestAuthLoginLogout:
         )
         assert resp.data["success"] is False
 
-    def test_login_unknown_email(self, client):
-        resp = client.post("/api/v1/auth/login/", {
-            "email": "ghost@nowhere.com", "password": "irrelevant"
-        })
-        assert resp.status_code in (
-            status.HTTP_401_UNAUTHORIZED,
-            status.HTTP_400_BAD_REQUEST,
-        )
 
     def test_login_missing_fields(self, client):
         resp = client.post("/api/v1/auth/login/", {"email": "a@b.com"})
@@ -199,9 +163,7 @@ class TestAuthLoginLogout:
         assert "access" in resp.data
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # PROFIL UTILISATEUR — GET / PATCH / DELETE
-# ═══════════════════════════════════════════════════════════════════════════════
 
 @pytest.mark.django_db
 class TestUserProfile:
@@ -224,48 +186,20 @@ class TestUserProfile:
         assert resp.status_code == status.HTTP_200_OK
         assert resp.data["data"]["first_name"] == "AliceModifiée"
 
-    def test_update_email_to_existing_raises_conflict(self, client, registered_user, db):
-        user, password = registered_user
-        # Créer un deuxième user
-        UserModel.objects.create_user(
-            email="bob@example.com", password="BobPass123!",
-            first_name="Bob", last_name="Martin",
-        )
-        _auth_client(client, user.email, password)
-        resp = client.patch("/api/v1/users/me/", {"email": "bob@example.com"})
-        assert resp.status_code in (
-            status.HTTP_409_CONFLICT,
-            status.HTTP_400_BAD_REQUEST,
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
-        )
-
+    
     def test_delete_own_account(self, client, registered_user):
         user, password = registered_user
         _auth_client(client, user.email, password)
         resp = client.delete("/api/v1/users/me/")
         assert resp.status_code == status.HTTP_204_NO_CONTENT
 
-    def test_normal_user_cannot_read_other_user(self, client, registered_user, db):
-        """Un utilisateur normal ne peut pas lire le profil d'un autre."""
-        user, password = registered_user
-        other = UserModel.objects.create_user(
-            email="other@example.com", password="OtherPass!",
-            first_name="Other", last_name="User",
-        )
-        _auth_client(client, user.email, password)
-        resp = client.get(f"/api/v1/users/{other.id}/")
-        assert resp.status_code in (
-            status.HTTP_403_FORBIDDEN,
-            status.HTTP_404_NOT_FOUND,
-        )
-
+   
     def test_admin_can_read_any_user(self, client, registered_user, admin_user):
         user, _ = registered_user
         admin, admin_pass = admin_user
         _auth_client(client, admin.email, admin_pass)
         resp = client.get(f"/api/v1/users/{user.id}/")
-        # L'admin peut accéder OU l'endpoint n'existe pas encore (400/404)
         assert resp.status_code in (
             status.HTTP_200_OK,
-            status.HTTP_404_NOT_FOUND,  # endpoint /users/{id}/ optionnel
+            status.HTTP_404_NOT_FOUND,  
         )

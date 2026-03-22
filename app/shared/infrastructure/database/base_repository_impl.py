@@ -34,7 +34,6 @@ class BaseDjangoRepository(BaseRepository[EntityT], Generic[EntityT, ModelT]):
     model_class: Type[ModelT]
     entity_name: str = "Entity"
 
-    # ── CRUD ────────────
 
     def save(self, entity: EntityT) -> EntityT:
         data = self._to_model_data(entity)

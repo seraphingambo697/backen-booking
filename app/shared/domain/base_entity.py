@@ -41,12 +41,8 @@ class DomainEvent:
 class BaseEntity:
     """
     Classe de base pour toutes les entités domaine.
+    xxxx-xxxx-xxxxx-xxxxx
 
-    Fournit :
-      - id UUID auto-généré
-      - timestamps created_at / updated_at
-      - touch() pour mettre à jour updated_at
-      - domain events : collect_event() + pull_events()
     """
     id:         str      = field(default_factory=lambda: str(uuid.uuid4()))
     created_at: datetime = field(default_factory=datetime.utcnow)

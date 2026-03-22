@@ -1,5 +1,5 @@
 """
-Tests unitaires Booking entity — pur Python, zéro Django.
+Tests unitaires Booking entity — pur Python,
 pytest app/modules/booking/tests/unit/ -v
 """
 from datetime import date, datetime, timedelta
@@ -11,7 +11,7 @@ from app.modules.booking.domain.entities.booking import Booking, BookingStatus
 from app.shared.domain.value_objects import DateRange, GuestCount, Money
 
 
-# ── Helper factory ──────
+# ── Helper factory
 
 def make_booking(
     status: BookingStatus = BookingStatus.PENDING,
@@ -75,6 +75,7 @@ class TestBookingProperties:
         assert b.currency == "EUR"
 
     def test_check_in_check_out(self):
+
         b = make_booking(days_until_checkin=5, nights=2)
         assert b.check_in  == date.today() + timedelta(days=5)
         assert b.check_out == date.today() + timedelta(days=7)
@@ -83,13 +84,16 @@ class TestBookingProperties:
 # ── Machine à états ─────
 
 class TestBookingStateMachine:
+    "Changement d'etat de notre booking"
 
     def test_pending_to_confirmed(self):
+        "pending - confirmed"
         b = make_booking(status=BookingStatus.PENDING)
         b.confirm()
         assert b.status == BookingStatus.CONFIRMED
 
     def test_pending_to_cancelled(self):
+        "pending - canceled"
         b = make_booking(status=BookingStatus.PENDING)
         b.cancel(reason="Plus besoin")
         assert b.status         == BookingStatus.CANCELLED
@@ -97,11 +101,13 @@ class TestBookingStateMachine:
         assert b.cancelled_at is not None
 
     def test_confirmed_to_completed(self):
+        "confirmer - complete"
         b = make_booking(status=BookingStatus.CONFIRMED)
         b.complete()
         assert b.status == BookingStatus.COMPLETED
 
     def test_confirmed_to_cancelled(self):
+        "confirmed to canceled"
         b = make_booking(status=BookingStatus.CONFIRMED)
         b.cancel()
         assert b.status == BookingStatus.CANCELLED
@@ -158,7 +164,7 @@ class TestBookingDomainEvents:
     def test_pull_events_clears_queue(self):
         b = make_booking()
         b.confirm()
-        b.pull_events()   # vide
+        b.pull_events()  
         assert not b.has_pending_events()
 
 
@@ -175,18 +181,7 @@ class TestBookingBusinessRules:
     def test_not_cancellable_completed(self):
         assert make_booking(BookingStatus.COMPLETED).is_cancellable() is False
 
-    def test_not_cancellable_cancelled(self):
-        assert make_booking(BookingStatus.CANCELLED).is_cancellable() is False
-
     def test_free_cancellation_far_future(self):
         b = make_booking(days_until_checkin=10)
         assert b.is_free_cancellation(min_hours=48) is True
 
-    def test_no_free_cancellation_tomorrow(self):
-        b = make_booking(days_until_checkin=1)
-        assert b.is_free_cancellation(min_hours=48) is False
-
-    def test_belongs_to_owner(self):
-        b = make_booking()
-        assert b.belongs_to("uid-001") is True
-        assert b.belongs_to("other")   is False

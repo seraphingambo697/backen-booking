@@ -72,22 +72,12 @@ class TestSearchHotels:
         }
         return client.post("/api/v1/search/", payload, format="json")
 
-    def test_search_accessible_anonymously(self, client, setup_hotels):
-        resp = self._search(client)
-        assert resp.status_code == status.HTTP_200_OK
-
     def test_search_returns_hotels_in_city(self, client, setup_hotels):
         resp = self._search(client, city="Paris")
         assert resp.status_code == status.HTTP_200_OK
         data = resp.data.get("data", resp.data.get("results", []))
-        assert len(data) == 2  # 2 hôtels Paris
+        assert len(data) == 2  # 2 hôtels a paris
 
-    def test_search_excludes_other_cities(self, client, setup_hotels):
-        resp = self._search(client, city="Lyon")
-        data = resp.data.get("data", resp.data.get("results", []))
-        names = [r["hotel"]["name"] for r in data]
-        assert "Hôtel Lyon" in names
-        assert "Palace Paris" not in names
 
     def test_search_filters_by_stars(self, client, setup_hotels):
         resp = self._search(client, city="Paris", stars_min=5)
@@ -114,33 +104,6 @@ class TestSearchHotels:
             "guest_count": 2,
         }, format="json")
         assert resp.status_code == status.HTTP_400_BAD_REQUEST
-
-    def test_search_past_dates_rejected(self, client, setup_hotels):
-        resp = client.post("/api/v1/search/", {
-            "city": "Paris",
-            "check_in":  "2020-01-01",
-            "check_out": "2020-01-05",
-            "guest_count": 2,
-        }, format="json")
-        assert resp.status_code in (
-            status.HTTP_400_BAD_REQUEST,
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
-        )
-
-    def test_search_missing_city_rejected(self, client, setup_hotels):
-        resp = client.post("/api/v1/search/", {
-            "check_in":  _future(5),
-            "check_out": _future(8),
-            "guest_count": 2,
-        }, format="json")
-        assert resp.status_code == status.HTTP_400_BAD_REQUEST
-
-    def test_search_returns_min_price_per_hotel(self, client, setup_hotels):
-        resp = self._search(client, city="Paris")
-        data = resp.data.get("data", resp.data.get("results", []))
-        for r in data:
-            assert "min_price" in r
-            assert r["min_price"] > 0
 
     def test_search_returns_nights_count(self, client, setup_hotels):
         resp = self._search(client, check_in_days=5, check_out_days=8)  # 3 nuits

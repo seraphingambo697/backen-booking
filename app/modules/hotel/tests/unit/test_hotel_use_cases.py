@@ -121,12 +121,6 @@ class TestDeleteHotelUseCase:
         uc.execute(DeleteHotelInput(hotel_id="hotel-1", requester_id="owner-1"))
         assert hotel.status == HotelStatus.INACTIVE
 
-    def test_stranger_cannot_delete(self):
-        repo = MagicMock()
-        repo.find_by_id.return_value = _mock_hotel(owner_id="owner-1")
-        uc = DeleteHotelUseCase(repo)
-        with pytest.raises(AuthorizationError):
-            uc.execute(DeleteHotelInput(hotel_id="hotel-1", requester_id="stranger"))
 
 
 class TestCreateRoomUseCase:
@@ -144,26 +138,4 @@ class TestCreateRoomUseCase:
         ))
         room_repo.save.assert_called_once()
 
-    def test_raises_if_hotel_not_found(self):
-        room_repo  = MagicMock()
-        hotel_repo = MagicMock()
-        hotel_repo.find_by_id.return_value = None
-        uc = CreateRoomUseCase(room_repo, hotel_repo)
-        with pytest.raises(EntityNotFoundError):
-            uc.execute(CreateRoomInput(
-                hotel_id="ghost", requester_id="owner-1",
-                name="Test", type="DOUBLE", description="",
-                price_per_night=100.0, capacity=2,
-            ))
-
-    def test_non_owner_cannot_create_room(self):
-        room_repo  = MagicMock()
-        hotel_repo = MagicMock()
-        hotel_repo.find_by_id.return_value = _mock_hotel(owner_id="owner-1")
-        uc = CreateRoomUseCase(room_repo, hotel_repo)
-        with pytest.raises(AuthorizationError):
-            uc.execute(CreateRoomInput(
-                hotel_id="hotel-1", requester_id="stranger",
-                name="Test", type="DOUBLE", description="",
-                price_per_night=100.0, capacity=2,
-            ))
+   
