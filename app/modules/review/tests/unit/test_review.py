@@ -21,7 +21,7 @@ from app.modules.review.domain.use_cases.create_review import (
 from app.core.exceptions import DomainValidationError
 
 
-# ── Factories ──────────────────────────────────────────────────────────────────
+# ── Factories 
 
 def _review(
     user_id: str = "uid-1",
@@ -257,7 +257,6 @@ class TestDeleteReviewUseCase:
         assert exc.value.entity == "Review"
 
     def test_delete_does_not_remove_from_db(self):
-        """Soft delete : on appelle save, jamais delete."""
         uc, repo = self._uc()
         uc.execute(DeleteReviewInput(review_id="rev-1", requester_id="uid-1"))
         assert not hasattr(repo, "delete") or not repo.delete.called
