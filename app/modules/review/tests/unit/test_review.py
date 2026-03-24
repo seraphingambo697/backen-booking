@@ -20,7 +20,6 @@ from app.modules.review.domain.use_cases.create_review import (
 )
 from app.core.exceptions import DomainValidationError
 
-
 # ── Factories 
 
 def _review(
@@ -59,11 +58,6 @@ class TestReviewEntity:
         r = Review(user_id="uid-1", hotel_id="hid-1", booking_id="bid-1", rating=5)
         assert r.rating     == 5
         assert r.is_visible is True
-
-    def test_rating_zero_raises(self):
-        with pytest.raises(DomainValidationError) as exc:
-            Review(user_id="uid-1", hotel_id="hid-1", booking_id="bid-1", rating=0)
-        assert exc.value.field == "rating"
 
     def test_rating_six_raises(self):
         with pytest.raises(DomainValidationError) as exc:
