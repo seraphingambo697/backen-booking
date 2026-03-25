@@ -87,7 +87,6 @@ class TokenService:
     def decode_user_id(access_token_str: str) -> str:
         """
         Extrait le user_id d'un access token sans passer par DRF.
-        Utile pour les consumers WebSocket ou les tâches async.
         """
         try:
             token = AccessToken(access_token_str)
